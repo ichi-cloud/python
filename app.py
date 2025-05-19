@@ -17,7 +17,7 @@ def root():
     </form>
     '''
 
-    return '<h1>hello</h1>' + form + ''.join(images)
+    return '<h1>Hello</h1>' + form + ''.join(images)
 
 
 @app.route('/greet/<name>')
@@ -53,3 +53,7 @@ if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
 
     # https://github.com/ichi-cloud/pythonのリポジトリ
+
+#git add app.py
+#git commit -m "Add image upload form to root page"
+#git push origin main
