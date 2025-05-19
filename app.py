@@ -8,7 +8,17 @@ app = Flask(__name__)
 def root():
     files = os.listdir('static')
     images = [f'<img src="/static/{f}" style="max-width: 200px; margin: 10px;">' for f in files if f.endswith(('.png', '.jpg', '.jpeg'))]
-    return '<h1>HELLO</h1>' + ''.join(images)
+
+    form = '''
+    <h2>画像アップロード</h2>
+    <form action="/v1/photos" method="POST" enctype="multipart/form-data">
+      <input type="file" name="file" accept="image/*" capture="environment" required>
+      <button type="submit">アップロード</button>
+    </form>
+    '''
+
+    return '<h1>HELLO</h1>' + form + ''.join(images)
+
 
 @app.route('/greet/<name>')
 def greet(name):
@@ -30,4 +40,4 @@ def post_photos():
         abort(400, description='No file provided.')
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
