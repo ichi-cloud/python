@@ -17,7 +17,7 @@ def root():
     </form>
     '''
 
-    return '<h1>HELLO</h1>' + form + ''.join(images)
+    return '<h1>hello</h1>' + form + ''.join(images)
 
 
 @app.route('/greet/<name>')
