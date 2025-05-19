@@ -1,13 +1,27 @@
-from flask import Flask, request, jsonify, abort, send_from_directory
+from flask import Flask, request, jsonify, abort
 from nanoid import generate
 import os
 
 app = Flask(__name__)
 
+initial_image = 'SkxF.jpg'  # ← ここを残した画像に合わせて変更
+
 @app.route('/', methods=['GET'])
 def root():
     files = os.listdir('static')
-    images = [f'<img src="/static/{f}" style="max-width: 200px; margin: 10px;">' for f in files if f.endswith(('.png', '.jpg', '.jpeg'))]
+    images_html = ''
+    for f in files:
+        if f.endswith(('.png', '.jpg', '.jpeg')):
+            delete_button = ''
+            if f != initial_image:
+                delete_button = f'''
+                    <form action="/v1/photos/{f}" method="POST" style="display:inline;">
+                        <input type="hidden" name="_method" value="DELETE">
+                        <button type="submit">削除</button>
+                    </form>
+                '''
+            images_html += f'<div style="display:inline-block;">' \
+                           f'<img src="/static/{f}" style="max-width:200px;"><br>{delete_button}</div>'
 
     form = '''
     <h2>画像アップロード</h2>
@@ -16,13 +30,8 @@ def root():
       <button type="submit">アップロード</button>
     </form>
     '''
+    return '<h1>hello</h1>' + form + images_html
 
-    return '<h1>Hello</h1>' + form + ''.join(images)
-
-
-@app.route('/greet/<name>')
-def greet(name):
-    return f'hello, {name}!'
 
 @app.route('/v1/photos', methods=['POST'])
 def post_photos():
@@ -34,20 +43,24 @@ def post_photos():
         ext = 'png' if file.content_type == 'image/png' else 'jpg'
         filename = f'{generate(size=4)}.{ext}'
         file.save(f'static/{filename}')
-        resp = {'url': f'/static/{filename}'}
-        return jsonify(resp)
+        return jsonify({'url': f'/static/{filename}'})
     else:
         abort(400, description='No file provided.')
 
-@app.route('/v1/photos/<filename>', methods=['DELETE'])
-def delete_photo(filename):
-    filepath = os.path.join('static', filename)
-    if os.path.exists(filepath):
-        os.remove(filepath)
-        return jsonify({'message': f'{filename} deleted.'}), 200
-    else:
-        abort(404, description='File not found.')
 
+@app.route('/v1/photos/<filename>', methods=['POST'])
+def delete_photo(filename):
+    if request.form.get('_method') == 'DELETE':
+        if filename == initial_image:
+            abort(403, description='Cannot delete the initial image.')
+        filepath = os.path.join('static', filename)
+        if os.path.exists(filepath):
+            os.remove(filepath)
+            return jsonify({'status': 'deleted'})
+        else:
+            abort(404, description='File not found.')
+    else:
+        abort(405)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
