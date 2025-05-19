@@ -39,5 +39,17 @@ def post_photos():
     else:
         abort(400, description='No file provided.')
 
+@app.route('/v1/photos/<filename>', methods=['DELETE'])
+def delete_photo(filename):
+    filepath = os.path.join('static', filename)
+    if os.path.exists(filepath):
+        os.remove(filepath)
+        return jsonify({'message': f'{filename} deleted.'}), 200
+    else:
+        abort(404, description='File not found.')
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+
+    # https://github.com/ichi-cloud/pythonのリポジトリ
